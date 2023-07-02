@@ -26,7 +26,7 @@ run test2.go with input argument twice (length of array & data of array), exampl
 ```
 
 - Test code 3
-run test1.go with following input argument time format, example :
+run test3.go with following input argument time format, example :
 
 ```bash
   go run test3.go 07:05:45PM
@@ -82,7 +82,7 @@ As a agent
 - reply comment (filter by ticket_id)
 - Close ticket (filter by ticket_id)
 
-Application flow
+## Application flow
 - create 1 supervisor and 1 agent
 - customer submit complaint ticket
 - login as a supervisor
