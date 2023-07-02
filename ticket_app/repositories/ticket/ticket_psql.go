@@ -70,7 +70,7 @@ func (p *psqlTicketRepo) Handover(m models.Ticket, data interface{}) (models.Tic
 		return m, res.Error
 	}
 
-	return models.Ticket{}, nil
+	return m, nil
 }
 
 func (p *psqlTicketRepo) Close(m models.Ticket, data interface{}) error {

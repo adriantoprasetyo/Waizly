@@ -36,7 +36,7 @@ func (tc *CommentController) Store(ctx *gin.Context) {
 		return
 	}
 
-	ticketId, err := strconv.Atoi(ctx.Query("ticket_id"))
+	ticketId, err := strconv.Atoi(ctx.Param("ticket_id"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -52,7 +52,7 @@ func (tc *CommentController) Store(ctx *gin.Context) {
 	comment = models.Comment{}
 	comment.Text = req.Text
 	comment.TicketId = ticket.Id
-	comment.UserId = ticket.UserId
+	comment.UserId = ticket.AgentId
 
 	commentRepo := repoComment.NewPSQLComment(tc.DB)
 	comment, err = commentRepo.Store(comment)

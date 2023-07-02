@@ -89,7 +89,7 @@ func (uc *UserController) Login(ctx *gin.Context) {
 }
 
 func (uc *UserController) Delete(ctx *gin.Context) {
-	userId, err := strconv.Atoi(ctx.Query("id"))
+	userId, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -101,4 +101,6 @@ func (uc *UserController) Delete(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "username or password is incorrect."})
 		return
 	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "delete user success"})
 }

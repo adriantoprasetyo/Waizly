@@ -44,7 +44,9 @@ func (tc *TicketController) Fetch(ctx *gin.Context) {
 
 	params := make(map[string]interface{})
 	if user.Role == "supervisor" {
-		params["agent_id"] = ctx.Query("agent_id")
+		if ctx.Query("agent_id") != "" {
+			params["agent_id"] = ctx.Query("agent_id")
+		}
 		params["ticket_status"] = ctx.DefaultQuery("ticket_status", "true")
 	} else {
 		params["agent_id"] = user_id
@@ -56,7 +58,26 @@ func (tc *TicketController) Fetch(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 
-	ctx.JSON(http.StatusOK, data)
+	result := []models.FetchTicket{}
+	commentRepo := repoComment.NewPSQLComment(tc.DB)
+	for _, ticket := range data {
+		comment, err := commentRepo.FetchByTicketId(ticket.Id)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+		tickets := models.FetchTicket{}
+
+		tickets.DataTicket.Id = ticket.Id
+		tickets.DataTicket.AgentId = ticket.AgentId
+		tickets.DataTicket.UserId = ticket.UserId
+		tickets.DataTicket.Status = ticket.Status
+		tickets.DataTicket.CreatedAt = ticket.CreatedAt
+		tickets.DataComment = comment
+
+		result = append(result, tickets)
+	}
+
+	ctx.JSON(http.StatusOK, result)
 }
 
 func (tc *TicketController) Store(ctx *gin.Context) {
@@ -118,7 +139,7 @@ func (tc *TicketController) Get(ctx *gin.Context) {
 		err    error
 	)
 
-	ticketId, err := strconv.Atoi(ctx.Query("id"))
+	ticketId, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -135,7 +156,21 @@ func (tc *TicketController) Get(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": "Ticket not found"})
 	}
 
-	ctx.JSON(http.StatusOK, ticket)
+	tickets := models.FetchTicket{}
+	commentRepo := repoComment.NewPSQLComment(tc.DB)
+	comment, err := commentRepo.FetchByTicketId(ticket.Id)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+
+	tickets.DataTicket.Id = ticket.Id
+	tickets.DataTicket.AgentId = ticket.AgentId
+	tickets.DataTicket.UserId = ticket.UserId
+	tickets.DataTicket.Status = ticket.Status
+	tickets.DataTicket.CreatedAt = ticket.CreatedAt
+	tickets.DataComment = comment
+
+	ctx.JSON(http.StatusOK, tickets)
 }
 
 func (tc *TicketController) Handover(ctx *gin.Context) {
@@ -168,8 +203,12 @@ func (tc *TicketController) Handover(ctx *gin.Context) {
 		return
 	}
 
+	id, _ := strconv.Atoi(req.TicketId)
+	data := make(map[string]interface{})
+	data["agent_id"] = req.AgentId
+
 	ticketRepo := repoTicket.NewPSQLTicket(tc.DB)
-	ticket, err = ticketRepo.Handover(models.Ticket{Id: req.TicketId}, req.AgentId)
+	ticket, err = ticketRepo.Handover(models.Ticket{Id: id}, data)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -180,27 +219,20 @@ func (tc *TicketController) Handover(ctx *gin.Context) {
 }
 
 func (tc *TicketController) CloseTicket(ctx *gin.Context) {
-	var (
-		ticket models.Ticket
-		err    error
-	)
+	var err error
 
-	ticketId, err := strconv.Atoi(ctx.Query("id"))
+	ticketId, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	ticketRepo := repoTicket.NewPSQLTicket(tc.DB)
-	err = ticketRepo.Close(models.Ticket{Id: ticketId}, models.Ticket{Status: false})
+	err = ticketRepo.Close(models.Ticket{Id: ticketId}, map[string]interface{}{"status": false})
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if !ticket.Status {
-		ctx.JSON(http.StatusNotFound, gin.H{"error": "Ticket not found"})
-	}
-
-	ctx.JSON(http.StatusOK, ticket)
+	ctx.JSON(http.StatusOK, gin.H{"message": "close ticket success"})
 }

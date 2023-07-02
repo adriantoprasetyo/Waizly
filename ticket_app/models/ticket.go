@@ -15,6 +15,11 @@ type Ticket struct {
 }
 
 type HandoverTicket struct {
-	TicketId int `json:"ticket_id" gorm:"column:ticket_id"`
-	AgentId  int `json:"agent_id" gorm:"column:agent_id"`
+	TicketId string `json:"ticket_id" binding:"required"`
+	AgentId  string `json:"agent_id" binding:"required"`
+}
+
+type FetchTicket struct {
+	DataTicket  Ticket    `json:"ticket"`
+	DataComment []Comment `json:"comment"`
 }

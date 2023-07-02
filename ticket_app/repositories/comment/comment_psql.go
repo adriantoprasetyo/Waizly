@@ -25,3 +25,15 @@ func (p *psqlCommentRepo) Store(m models.Comment) (models.Comment, error) {
 
 	return m, nil
 }
+
+func (p *psqlCommentRepo) FetchByTicketId(id int) ([]models.Comment, error) {
+	var (
+		comment []models.Comment
+		err     error
+	)
+	err = p.Conn.Where("ticket_id=?", id).Find(&comment).Error
+	if err != nil {
+		return []models.Comment{}, err
+	}
+	return comment, nil
+}

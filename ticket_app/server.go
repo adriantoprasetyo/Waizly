@@ -21,7 +21,7 @@ func main() {
 	{
 		auth.POST("/register", userCtrl.Register)
 		auth.POST("/login", userCtrl.Login)
-		auth.DELETE("/:id", userCtrl.Delete)
+		auth.DELETE("/user/delete/:id", userCtrl.Delete)
 	}
 
 	publicTicket := r.Group("/ticket")
