@@ -84,7 +84,7 @@ As a agent
 
 Application flow
 - create 1 supervisor and 1 agent
-- user submit complaint ticket
+- customer submit complaint ticket
 - login as a supervisor
 - supervisor fetch all ticket
 - supervisor handover ticket to an agent
