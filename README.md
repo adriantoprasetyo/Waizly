@@ -58,7 +58,7 @@ run test1.go with following input argument time format, example :
 
 ## What this API could do ?
 
-Complain ticket application
+Note : you can import all postman API collection on root project.
 
 Auth API
 - Login
